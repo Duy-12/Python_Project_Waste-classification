@@ -1,0 +1,8 @@
+train: train/images
+val: val/images
+nc: 4
+names:
+  0: Inorganic waste
+  1: Organic waste
+  2: Recyclable waste
+  3: hazardous waste

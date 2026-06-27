@@ -65,20 +65,7 @@ class DataFrameView(ctk.CTkFrame):
         
         self.lbl_hist_title = ctk.CTkLabel(self.header_hist, text="Lịch Sử Phân Tích (0)", font=("Arial", 22, "bold"), text_color="black")
         self.lbl_hist_title.pack(side="left")
-        ctk.CTkButton(
-                        self.header_hist,
-                        text=" Xóa",
-                        image=self.icon_delete,
-                        compound="left",
-                        width=100,
-                        height=38,
-                        fg_color="#ff9800",
-                        hover_color="#f57c00",
-                        text_color="white",
-                        font=("Arial", 14, "bold"),
-                        corner_radius=8,
-                        command=self.delete_selected_row
-                    ).pack(side="right", padx=5)
+        
         ctk.CTkButton(self.header_hist, text=" Xóa Tất Cả", image=self.icon_delete, compound="left", width=130, height=38, fg_color="#ff4d6d", hover_color="#ff1a43", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, command=self.clear_all_data).pack(side="right", padx=5)
         ctk.CTkButton(self.header_hist, text=" Xuất", image=self.icon_export, compound="left", width=100, height=38, fg_color="#4cc9f0", hover_color="#4361ee", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, command=self.export_to_csv).pack(side="right", padx=5)
         self.filter_buttons_frame = ctk.CTkFrame(self.history_frame, fg_color="transparent")
@@ -481,72 +468,3 @@ class DataFrameView(ctk.CTkFrame):
             
         self.lbl_hist_title.configure(text=f"Lịch Sử Phân Tích ({len(rows)})")
         conn.close()
-
-    def delete_selected_row(self):
-            selected = self.tree.selection()
-
-            if not selected:
-                from tkinter import messagebox
-                messagebox.showwarning(
-                    "Thông báo",
-                    "Vui lòng chọn một dòng cần xóa!"
-                )
-                return
-
-            from tkinter import messagebox
-
-            if not messagebox.askyesno(
-                "Xác nhận",
-                "Bạn có chắc muốn xóa dữ liệu này?"
-            ):
-                return
-
-            try:
-                values = self.tree.item(selected[0])["values"]
-
-                timestamp = values[1]
-                image_path = values[4]
-
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-
-                cursor.execute(
-                    "DELETE FROM waste_history WHERE timestamp = ?",
-                    (timestamp,)
-                )
-
-                conn.commit()
-                conn.close()
-
-                # Xóa ảnh tương ứng
-                if image_path:
-                    backend_dir = os.path.dirname(self.db_path)
-
-                    clean_path = str(image_path)\
-                        .replace("/", os.sep)\
-                        .replace("\\", os.sep)
-
-                    full_path = os.path.join(
-                        backend_dir,
-                        clean_path
-                    )
-
-                    if os.path.exists(full_path):
-                        try:
-                            os.remove(full_path)
-                        except:
-                            pass
-
-                self.load_data_from_database()
-                self.show_empty_detail_state()
-
-                messagebox.showinfo(
-                    "Thành công",
-                    "Đã xóa dữ liệu!"
-                )
-
-            except Exception as e:
-                messagebox.showerror(
-                    "Lỗi",
-                    f"Không thể xóa dữ liệu:\n{e}"
-                )
